@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
  /****************************************************************************
  * Pre-processor Definitions
@@ -119,9 +120,13 @@
  * Public Functions
  ****************************************************************************/
 
+#define DEBOUNCE_COUNT 5
+#define DEBOUNCE_DELAY 1000
+
 int main(int argc, char *argv[])
 {
   uint32_t reg;
+  int i, j = 0;
 
   /* Ponteiros para registradores */
 
@@ -177,20 +182,25 @@ int main(int argc, char *argv[])
   reg |= (GPIO_PUPDR_NONE << GPIO_PUPDR_SHIFT(13));
   *pGPIOC_PUPDR = reg;
 
-  while(1)
-    {
-        /* Verifica se botão está pressionado */
-        if ((*pGPIOA_IDR & GPIO_IDR_MASK(0)) == 0)
-        {
-            /* Acende LED */
-            *pGPIOC_BSRR = GPIO_BSRR_SET(13);
-        }
-        else
-        {
-            /* Apaga LED */
-            *pGPIOC_BSRR = GPIO_BSRR_RESET(13);
-        }
-    }
+  while(1) {
+      
+      /* Verifica se botão está sendo pressionado */
+      if ((*pGPIOA_IDR & GPIO_IDR_MASK(0)) == 0) {
+
+          /* Aguarda um tempo para evitar o efeito de bouncing */
+          while (i < DEBOUNCE_COUNT) {
+              i++;
+              for (j = 0; j < DEBOUNCE_DELAY; j++);
+          }
+
+          /* Acende LED */
+          *pGPIOC_BSRR = GPIO_BSRR_SET(13);
+      }
+      else {
+          /* Apaga LED */
+          *pGPIOC_BSRR = GPIO_BSRR_RESET(13);
+      }
+  }
 
   /* Nunca deveria chegar aqui */
 
