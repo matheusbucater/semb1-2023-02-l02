@@ -126,7 +126,10 @@
 int main(int argc, char *argv[])
 {
   uint32_t reg;
-  int i, j = 0;
+  int i = 0, j = 0;
+
+  /* true = botão pressionado, false = botão não pressionado */
+  bool btn_state, btn_prev_state = false;
 
   /* Ponteiros para registradores */
 
@@ -184,21 +187,22 @@ int main(int argc, char *argv[])
 
   while(1) {
       
-      /* Verifica se botão está sendo pressionado */
-      if ((*pGPIOA_IDR & GPIO_IDR_MASK(0)) == 0) {
+      /* Verifica se botão está pressionado */
+      btn_state = (*pGPIOA_IDR & GPIO_IDR_MASK(0)) == 0;
 
-          /* Aguarda um tempo para evitar o efeito de bouncing */
+      /* Verifica se houve mudança no estado do botão */
+      if (btn_state != btn_prev_state) {
+
+          /* Acende/Apaga o LED */
+          *pGPIOC_BSRR = GPIO_BSRR_SET(13) ? btn_state : GPIO_BSRR_RESET(13);
+
+          btn_prev_state = btn_state;
+
+          /* Aguarda um tempo para evitar bouncing e multiplos acionamentos */
           while (i < DEBOUNCE_COUNT) {
               i++;
               for (j = 0; j < DEBOUNCE_DELAY; j++);
           }
-
-          /* Acende LED */
-          *pGPIOC_BSRR = GPIO_BSRR_SET(13);
-      }
-      else {
-          /* Apaga LED */
-          *pGPIOC_BSRR = GPIO_BSRR_RESET(13);
       }
   }
 
