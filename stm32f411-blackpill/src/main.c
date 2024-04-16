@@ -187,18 +187,18 @@ int main(int argc, char *argv[])
       /* Verifica se botão está sendo pressionado */
       if ((*pGPIOA_IDR & GPIO_IDR_MASK(0)) == 0) {
 
-          /* Aguarda um tempo para evitar o efeito de bouncing */
-          while (i < DEBOUNCE_COUNT) {
-              i++;
-              for (j = 0; j < DEBOUNCE_DELAY; j++);
-          }
-
           /* Acende LED */
           *pGPIOC_BSRR = GPIO_BSRR_SET(13);
       }
       else {
           /* Apaga LED */
           *pGPIOC_BSRR = GPIO_BSRR_RESET(13);
+      }
+
+      /* Aguarda um tempo para evitar o efeito de bouncing / multiplos cliques */
+      while (i < DEBOUNCE_COUNT) {
+          i++;
+          for (j = 0; j < DEBOUNCE_DELAY; j++);
       }
   }
 
